@@ -1,91 +1,44 @@
-import { useQuery } from "@apollo/client";
-import { Contract } from "@ethersproject/contracts";
-import { shortenAddress, useCall, useEthers, useLookupAddress } from "@usedapp/core";
-import React, { useEffect, useState } from "react";
+import React from 'react'
+import ReactDOM from 'react-dom'
+import { formatEther } from '@ethersproject/units'
+import { Localhost , Mainnet, DAppProvider, useEtherBalance, useEthers, Config , useTokenBalance, Goerli} from '@usedapp/core'
+import { getDefaultProvider } from 'ethers'
+import { key } from './Keys'
 
-import { Body, Button, Container, Header, Image, Link } from "./components";
-import logo from "./ethereumLogo.png";
+const curChainID = Goerli.chainId
 
-import { addresses, abis } from "@my-app/contracts";
-import GET_TRANSFERS from "./graphql/subgraph";
-
-function WalletButton() {
-  const [rendered, setRendered] = useState("");
-
-  const ens = useLookupAddress();
-  const { account, activateBrowserWallet, deactivate, error } = useEthers();
-
-  useEffect(() => {
-    if (ens) {
-      setRendered(ens);
-    } else if (account) {
-      setRendered(shortenAddress(account));
-    } else {
-      setRendered("");
-    }
-  }, [account, ens, setRendered]);
-
-  useEffect(() => {
-    if (error) {
-      console.error("Error while connecting wallet:", error.message);
-    }
-  }, [error]);
-
-  return (
-    <Button
-      onClick={() => {
-        if (!account) {
-          activateBrowserWallet();
-        } else {
-          deactivate();
-        }
-      }}
-    >
-      {rendered === "" && "Connect Wallet"}
-      {rendered !== "" && rendered}
-    </Button>
-  );
+const config = {
+  readOnlyChainId: Goerli.chainId,
+  readOnlyUrls: {
+    [Goerli.chainId]: "https://eth-goerli.alchemyapi.io/v2/" + key.Alchemy,
+  },
 }
 
-function App() {
-  // Read more about useDapp on https://usedapp.io/
-  const { error: contractCallError, value: tokenBalance } =
-    useCall({
-       contract: new Contract(addresses.ceaErc20, abis.erc20),
-       method: "balanceOf",
-       args: ["0x3f8CB69d9c0ED01923F11c829BaE4D9a4CB6c82C"],
-    }) ?? {};
+console.log(Goerli)
 
-  const { loading, error: subgraphQueryError, data } = useQuery(GET_TRANSFERS);
+const myTokenAddress = key.TokenAddress
 
-  useEffect(() => {
-    if (subgraphQueryError) {
-      console.error("Error while querying subgraph:", subgraphQueryError.message);
-      return;
-    }
-    if (!loading && data && data.transfers) {
-      console.log({ transfers: data.transfers });
-    }
-  }, [loading, subgraphQueryError, data]);
+ReactDOM.render(
+  <DAppProvider config={config}>
+    <App />
+  </DAppProvider>,
+  document.getElementById('root')
+)
+
+export function App() {
+  const { activateBrowserWallet, account, deactivate } = useEthers()
+  const etherBalance = useEtherBalance(account, { chainId: curChainID })
+  const tokenBalance = useTokenBalance(myTokenAddress, account, { chainId: curChainID })
 
   return (
-    <Container>
-      <Header>
-        <WalletButton />
-      </Header>
-      <Body>
-        <Image src={logo} alt="ethereum-logo" />
-        <p>
-          Edit <code>packages/react-app/src/App.js</code> and save to reload.
-        </p>
-        <Link href="https://reactjs.org">
-          Learn React
-        </Link>
-        <Link href="https://usedapp.io/">Learn useDapp</Link>
-        <Link href="https://thegraph.com/docs/quick-start">Learn The Graph</Link>
-      </Body>
-    </Container>
-  );
-}
+    
+    <div>
+      {!account && <button onClick={activateBrowserWallet}> Connect </button>}
+      {account && <button onClick={deactivate}> Disconnect </button>}
+      {account && <p>Account: {account}</p>}
+      {etherBalance && <p>Ether Balance: {formatEther(etherBalance) } ETH</p>}
+      {tokenBalance && <p>Token Balance: {formatEther(tokenBalance) * 10 * (10**17)} MET</p>}
 
-export default App;
+    </div>
+  )
+}
