@@ -5,7 +5,7 @@ import { DAppProvider, Mainnet, Goerli } from "@usedapp/core";
 import React from "react";
 import ReactDOM from "react-dom";
 import { key } from "./Keys";
-import {BalanceDiv, TransferDiv} from "./App";
+import {BalanceDiv, NFTBalanceDiv, NFTTransfertDiv, TransferDiv} from "./App";
 
 // Change this to your own Infura project id: https://infura.io/register
 
@@ -29,7 +29,8 @@ ReactDOM.render(
 
         <BalanceDiv />
         <TransferDiv/>
-
+        <NFTBalanceDiv/>
+        <NFTTransfertDiv/>
     </DAppProvider>
   </React.StrictMode>,
   document.getElementById("root"),
