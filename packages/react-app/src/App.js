@@ -25,7 +25,7 @@ const myTokenAddress = key.TokenAddress
 ReactDOM.render(
   <DAppProvider config={config}>
     <BalanceDiv />
-
+    <TransferDiv/>
   </DAppProvider>,
   document.getElementById('root')
 )
