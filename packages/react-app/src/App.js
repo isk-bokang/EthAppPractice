@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { formatEther, formatUnits } from '@ethersproject/units'
-import {   DAppProvider, useEtherBalance, useEthers,  useTokenBalance, Goerli, Localhost, useContractFunction, useCall, Call} from '@usedapp/core'
+import {   DAppProvider, useEtherBalance, useEthers,  useTokenBalance, Goerli, Localhost, useContractFunction, useCall, useTransactions} from '@usedapp/core'
 import { key } from './Keys'
 
 import { MaskConnection } from './components/MaskConnect'
@@ -11,6 +11,7 @@ import { Contract } from '@ethersproject/contracts'
 import {abis, addresses} from '@my-app/contracts' 
 
 import { useEffect } from 'react'
+import { usePromiseTransaction } from '@usedapp/core/dist/esm/src/hooks/usePromiseTransaction'
 
 
 
@@ -34,6 +35,7 @@ ReactDOM.render(
     <TransferDiv/>
     <NFTBalanceDiv/>
     <NFTTransfertDiv/>
+    <TransactionListDiv/>
   </DAppProvider>,
   document.getElementById('root')
 )
@@ -133,16 +135,11 @@ export function NFTBalanceDiv(){
   const NFTInterface = new utils.Interface(abis.METNFTE);
   const NFTContractAddress = addresses.METNFTE;
   const tokenContract = new Contract(NFTContractAddress, NFTInterface)
-  console.log(tokenContract)
+
 
   let totalSupply = useTotalSupply(NFTContractAddress, tokenContract);
 
-  
-  function sendTx(){
-    
-    console.log(NFTInterface)
 
-  }
 
   return(
     <div>
@@ -150,7 +147,6 @@ export function NFTBalanceDiv(){
       <MaskConnection/>
       { tokenBalance && <p>NFT Balance : { formatUnits(tokenBalance, 0 )}</p>}
       { totalSupply && <p>NFT TotalSupply : { formatUnits(totalSupply, 0) }</p>}
-      { account && <button onClick={sendTx} > LOAD </button>}
     </div>
   )
 }
@@ -198,6 +194,42 @@ export function NFTTransfertDiv(){
           </tr>
           </tbody>
         </table>
+      </div>
+    );
+}
+
+
+export function TransactionListDiv(){
+  useEffect(()=>{
+    return ()=>{
+  
+  }}, [])
+
+  const {transactions, additionalTx} = useTransactions({chainId : curChainID});
+
+
+  return (
+      <div>
+        <h3>Transaction List Div</h3>
+
+        <p>Transactions</p>
+        {transactions.length !== 0 && (
+          <table>
+            <th>Name</th>
+            <th>Block hash</th>
+            <th>Date</th>
+            {transactions.map((transaction) => {
+              return (
+                <tr>
+                  <td>{transaction.transactionName}</td>
+                  <td>{transaction.receipt?.blockHash ?? 'Pending...'}</td>
+                  <td>{new Date(transaction.submittedAt).toDateString()}</td>
+                </tr>
+              )
+            })}
+          </table>
+        )}
+
       </div>
     );
 }
