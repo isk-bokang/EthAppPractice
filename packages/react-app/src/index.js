@@ -5,7 +5,7 @@ import { DAppProvider, Mainnet, Goerli } from "@usedapp/core";
 import React from "react";
 import ReactDOM from "react-dom";
 import { key } from "./Keys";
-import {BalanceView} from "./App";
+import {BalanceDiv, TransferDiv} from "./App";
 
 // Change this to your own Infura project id: https://infura.io/register
 
@@ -27,7 +27,8 @@ ReactDOM.render(
   <React.StrictMode>
     <DAppProvider config={config}>
 
-        <BalanceView />
+        <BalanceDiv />
+        <TransferDiv/>
 
     </DAppProvider>
   </React.StrictMode>,

@@ -1,9 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { formatEther } from '@ethersproject/units'
-import { Localhost , Mainnet, DAppProvider, useEtherBalance, useEthers, Config , useTokenBalance, Goerli, useSendTransaction} from '@usedapp/core'
-import { getDefaultProvider } from 'ethers'
+import {   DAppProvider, useEtherBalance, useEthers,  useTokenBalance, Goerli, useSendTransaction, useContractFunction} from '@usedapp/core'
 import { key } from './Keys'
+
+import { MaskConnection } from './components/MaskConnect'
+
+import { utils } from 'ethers'
+import { Contract } from '@ethersproject/contracts'
+import {abis, addresses} from '@my-app/contracts' 
 
 const curChainID = Goerli.chainId
 
@@ -14,28 +19,26 @@ const config = {
   },
 }
 
-console.log(Goerli)
 
 const myTokenAddress = key.TokenAddress
 
 ReactDOM.render(
   <DAppProvider config={config}>
     <BalanceDiv />
+
   </DAppProvider>,
   document.getElementById('root')
 )
 
 export function BalanceDiv() {
-  const { activateBrowserWallet, account, deactivate } = useEthers()
+  const { account } = useEthers()
   const etherBalance = useEtherBalance(account, { chainId: curChainID })
   const tokenBalance = useTokenBalance(myTokenAddress, account, { chainId: curChainID })
 
   return (
     <div>
-      <H3>Balance Div</H3>
-      {!account && <button onClick={activateBrowserWallet}> Connect </button>}
-      {account && <button onClick={deactivate}> Disconnect </button>}
-      {account && <p>Account: {account}</p>}
+      {<h3>Balance Div</h3>}
+      <MaskConnection/>
       {etherBalance && <p>Ether Balance: {formatEther(etherBalance) } ETH</p>}
       {tokenBalance && <p>Token Balance: {formatEther(tokenBalance) * 10 * (10**17)} MET</p>}
 
@@ -45,21 +48,39 @@ export function BalanceDiv() {
 
 
 export function TransferDiv() {
-  const { activateBrowserWallet, account, deactivate } = useEthers()
-  const {sendTransaction, state} = useSendTransaction();
 
+  let targAddress = " ";
+  let amountOfMET = 0;
+
+  const METInterface = new utils.Interface(abis.MET);
+  const MetContractAddress = addresses.MET;
+  const contract = new Contract(MetContractAddress, METInterface);
+
+  const {state, send} = useContractFunction(contract, "transfer")
+
+  const onClickSend = () => {
+    
+    send(targAddress , amountOfMET)
+    console.log(state)
+  }
 
   return (
-    <div>
-      <H3>Transfer</H3>
-      {!account && <button onClick={activateBrowserWallet}> Connect </button>}
-      {account && <button onClick={deactivate}> Disconnect </button>}
-      {account && <p>FROM : {account}</p>}
-      {account && <p>TO   : </p>}
-      {account && <p>amount : </p> }
-      {account && <input type="text"></input>}
-      {account && <button onClick={deactivate}> Disconnect </button>}
-
-    </div>
-  )
+      <div>
+        <h3>Transfer MET</h3>
+        <MaskConnection/>
+        <table>
+          <tr>
+            <td>TO</td>
+            <td><input type = "text"  onInput={e=> targAddress = e.target.value}></input></td>
+          </tr>
+          <tr>
+            <td>AMOUNT</td>
+            <td><input type="number" onInput={e=> amountOfMET = e.target.value}></input></td>
+          </tr>
+          <tr>
+            <td colSpan={2}> <button onClick={onClickSend}> Transfer</button> </td>
+          </tr>
+        </table>
+      </div>
+    );
 }
