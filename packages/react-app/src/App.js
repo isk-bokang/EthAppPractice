@@ -12,6 +12,7 @@ import {abis, addresses} from '@my-app/contracts'
 
 import { useEffect } from 'react'
 import { usePromiseTransaction } from '@usedapp/core/dist/esm/src/hooks/usePromiseTransaction'
+import { TokenTxLogs } from './components/EventLog'
 
 
 
@@ -55,7 +56,7 @@ export function BalanceDiv() {
       <MaskConnection/>
       {etherBalance && <p>Ether Balance: {formatEther(etherBalance) } ETH</p>}
       {tokenBalance && <p>Token Balance: { ethers.utils.formatUnits(tokenBalance, 0 ) } MET</p>}
-
+      
     </div>
   )
 }
@@ -84,6 +85,7 @@ export function TransferDiv() {
       <div>
         <h3>Transfer MET Div</h3>
         <MaskConnection/>
+        
         <table>
           <thead></thead>
           <tbody>
@@ -100,6 +102,8 @@ export function TransferDiv() {
           </tr>
           </tbody>
         </table>
+
+        { <TokenTxLogs state = {state}/>}
       </div>
     );
 }
@@ -194,6 +198,7 @@ export function NFTTransfertDiv(){
           </tr>
           </tbody>
         </table>
+
       </div>
     );
 }
@@ -205,7 +210,7 @@ export function TransactionListDiv(){
   
   }}, [])
 
-  const {transactions, additionalTx} = useTransactions({chainId : curChainID});
+  const {transactions} = useTransactions({chainId : curChainID});
 
 
   return (
